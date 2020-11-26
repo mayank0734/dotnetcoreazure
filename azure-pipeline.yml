@@ -73,10 +73,10 @@ stages:
        - task: AzureResourceManagerTemplateDeployment@3
          inputs:
            deploymentScope: 'Resource Group'
-           azureResourceManagerConnection: 'Free Trial(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
+           azureResourceManagerConnection: 'Free Trial(2)(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
            subscriptionId: '8bc354b4-f372-41ce-a6c2-856ab22f5fcf'
            action: 'Create Or Update Resource Group'
-           resourceGroupName: 'rvrg'
+           resourceGroupName: 'partsunlimited'
            location: 'Central US'
            templateLocation: 'Linked artifact'
            csmFile: '$(System.DefaultWorkingDirectory)/_dotnetcoresampleapplication-ASP.NET Core-CI/drop/DropArmTemplates/template.json'
@@ -86,7 +86,7 @@ stages:
        - task: AzureRmWebAppDeployment@4
          inputs:
           ConnectionType: 'AzureRM'
-          azureSubscription: 'Free Trial(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
+          azureSubscription: 'Free Trial(2)(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
           appType: 'webApp'
-          WebAppName: '$(AppServiceName)'
-          packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+          WebAppName: 'demo-yaml1'
+          packageForLinux: '$(System.ArtifactsDirectory)/drop/*.zip'
