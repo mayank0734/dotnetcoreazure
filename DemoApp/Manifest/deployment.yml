@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: demoapp-deployment
+    labels:
+        app: demoapp
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: demoapp
+    template: 
+        metadata:
+            labels:
+                app: demoapp
+        spec:
+            containers:
+            - name: k8s-demo
+              image: ravikumar7206.azurecr.io/demoapp:#{Build.BuildId}#
+              #image: ravikumar7206/demoapp:#{Build.BuildId}#
+              ports:
+              - containerPort: 80
+            imagePullSecrets:
+            - name: regsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: demoapp
+    labels:
+        app: demoapp
+spec:
+    ports:
+        - name: http-port
+          port: 80
+          targetPort: 80
+    selector: 
+        app: demoapp
+    type: LoadBalancer
+
+    
