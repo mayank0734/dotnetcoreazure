@@ -52,10 +52,10 @@ stages:
          TargetFolder: '$(build.artifactstagingdirectory)/DropArmTemplates'
 
      - task: PublishBuildArtifacts@1
-       displayName: 'Publish Artifact'
        inputs:
-         PathtoPublish: '$(build.artifactstagingdirectory)'
-       condition: succeededOrFailed()
+         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+         ArtifactName: 'drop'
+         publishLocation: 'Container'
 
  - stage: Deploy
    jobs:
@@ -63,7 +63,7 @@ stages:
      pool:
        vmImage: 'vs2017-win2016'
        variables:
-         AppServiceName: 'sampleaspcorewebappdev'
+         AppServiceName: 'demo-yaml1'
        steps:
        - task: DownloadBuildArtifacts@0
          inputs:
@@ -89,4 +89,4 @@ stages:
           azureSubscription: 'Free Trial(2)(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
           appType: 'webApp'
           WebAppName: 'demo-yaml1'
-          packageForLinux: '$(System.ArtifactsDirectory)/drop/*.zip'
+         packageForLinux: '$(System.ArtifactsDirectory)/drop/*.zip'
