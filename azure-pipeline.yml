@@ -31,62 +31,45 @@ stages:
          msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
          platform: '$(buildPlatform)'
          configuration: '$(buildConfiguration)'
-
-     - task: VSTest@2
-       inputs:
-         platform: '$(buildPlatform)'
-         configuration: '$(buildConfiguration)'
      
      - task: DotNetCoreCLI@2
        displayName: Publish
        inputs:
          command: publish
          publishWebProjects: True
-         arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+         arguments: '--configuration $(buildConfiguration) --output $(build.artifactStagingDirectory)'
          zipAfterPublish: True
 
      - task: CopyFiles@2
-       displayName: 'Copy Files to: $(build.artifactstagingdirectory)/DropArmTemplates'
+       displayName: 'Copy Files to: $(build.artifactStagingDirectory)/DropArmTemplates'
        inputs:
          SourceFolder: DemoApp/Manifest
-         TargetFolder: '$(build.artifactstagingdirectory)/DropArmTemplates'
+         TargetFolder: '$(build.artifactStagingDirectory)/DropArmTemplates'
 
      - task: PublishBuildArtifacts@1
+       displayName: 'Publish Artifact'
        inputs:
-         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-         ArtifactName: 'drop'
-         publishLocation: 'Container'
+         PathtoPublish: '$(build.artifactStagingDirectory)'
+       condition: succeededOrFailed()
 
  - stage: Deploy
    jobs:
    - job: Deploy
      pool:
        vmImage: 'vs2017-win2016'
-       variables:
-         AppServiceName: 'demo-yaml1'
-       steps:
-       - task: DownloadBuildArtifacts@0
-         inputs:
-           buildType: 'current'
-           downloadType: 'single'
-           downloadPath: '$(System.ArtifactsDirectory)'
-       - task: AzureResourceManagerTemplateDeployment@3
-         inputs:
-           deploymentScope: 'Resource Group'
-           azureResourceManagerConnection: 'Free Trial(2)(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
-           subscriptionId: '8bc354b4-f372-41ce-a6c2-856ab22f5fcf'
-           action: 'Create Or Update Resource Group'
-           resourceGroupName: 'partsunlimited'
-           location: 'Central US'
-           templateLocation: 'Linked artifact'
-           csmFile: '$(System.DefaultWorkingDirectory)/_dotnetcoresampleapplication-ASP.NET Core-CI/drop/DropArmTemplates/template.json'
-           csmParametersFile: '$(System.DefaultWorkingDirectory)/_dotnetcoresampleapplication-ASP.NET Core-CI/drop/DropArmTemplates/parameters.json'
-           overrideParameters: '-subscriptionId "8bc354b4-f372-41ce-a6c2-856ab22f5fcf" -name $(AppServiceName) -location "Central US" -hostingPlanName "ASP-rvrg-9df7" -serverFarmResourceGroup "rvrg" -alwaysOn false -sku "Free" -skuCode "F1" -workerSize "0" -workerSizeId "0" -numberOfWorkers "1" -currentStack "dotnetcore" -phpVersion "OFF" -errorLink "https://sampledotnetwebapp.scm.azurewebsites.net/detectors?type=tools&name=eventviewer"'
-           deploymentMode: 'Incremental'
-       - task: AzureRmWebAppDeployment@4
-         inputs:
-          ConnectionType: 'AzureRM'
-          azureSubscription: 'Free Trial(2)(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
-          appType: 'webApp'
-          WebAppName: 'demo-yaml1'
-         packageForLinux: '$(System.ArtifactsDirectory)/drop/*.zip'
+     variables:
+       AppServiceName: 'demo-yaml1'
+     steps:
+     - task: DownloadBuildArtifacts@0
+       inputs:
+         buildType: 'current'
+         downloadType: 'single'
+         artifactName: '_dotnetcoresampleapplication-ASP.NET Core-CI'
+         downloadPath: '$(System.ArtifactsDirectory)'
+     - task: AzureRmWebAppDeployment@4
+       inputs:
+         ConnectionType: 'AzureRM'
+         azureSubscription: 'Free Trial(8bc354b4-f372-41ce-a6c2-856ab22f5fcf)'
+         appType: 'webApp'
+         WebAppName: 'demo-yaml1'
+         packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
